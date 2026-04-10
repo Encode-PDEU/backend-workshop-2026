@@ -1,0 +1,14 @@
+{
+  "name": "campuslens-backend",
+  "version": "1.0.0",
+  "description": "CampusLens - Campus Social Platform Backend",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
