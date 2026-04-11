@@ -5,14 +5,13 @@ import Post from '../models/Post.js';
 // @access  Private
 export const createPost = async (req, res, next) => {
   try {
-    const { content, isAnonymous } = req.body;
+    const { content } = req.body;
     const image = req.file ? req.file.path : null;
 
     const post = await Post.create({
       author: req.user.username,
       content,
       image,
-      isAnonymous: isAnonymous === 'true' || isAnonymous === true,
     });
 
     res.status(201).json({
@@ -44,9 +43,7 @@ export const getAllPosts = async (req, res, next) => {
     // Apply privacy masking for anonymous posts
     const maskedPosts = posts.map(post => {
       const postObj = post.toObject();
-      if (postObj.isAnonymous) {
-        postObj.author = 'anonymous';
-      }
+      postObj.author = 'Anonymous';
       return postObj;
     });
 
@@ -82,11 +79,7 @@ export const getPostById = async (req, res, next) => {
     }
 
     const postObj = post.toObject();
-
-    // Apply privacy masking
-    if (postObj.isAnonymous) {
-      postObj.author = 'anonymous';
-    }
+    postObj.author = 'Anonymous';
 
     res.status(200).json({
       success: true,
@@ -246,9 +239,10 @@ export const getTopPosts = async (req, res, next) => {
   try {
     const posts = await Post.find({ hasWonReward: false }).sort({ createdAt: -1 });
 
-    // Calculate scores and sort in memory
+    // Calculate scores and mask authors
     const postsWithScores = posts.map(post => ({
       ...post.toObject(),
+      author: 'Anonymous',
       score: post.likes.length - post.dislikes.length,
     }));
 
@@ -259,6 +253,39 @@ export const getTopPosts = async (req, res, next) => {
     res.status(200).json({
       success: true,
       data: { posts: topPosts },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get user's own posts
+// @route   GET /api/posts/me
+// @access  Private
+export const getMyPosts = async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const posts = await Post.find({ author: req.user.username })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Post.countDocuments({ author: req.user.username });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        posts,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit),
+        },
+      },
     });
   } catch (error) {
     next(error);

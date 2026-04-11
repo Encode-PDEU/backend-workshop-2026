@@ -7,10 +7,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Username is required'],
       unique: true,
-      trim: true,
-      lowercase: true,
-      minlength: [3, 'Username must be at least 3 characters'],
-      maxlength: [20, 'Username cannot exceed 20 characters'],
     },
     email: {
       type: String,
@@ -24,15 +20,7 @@ const userSchema = new mongoose.Schema(
       required: [true, 'Password is required'],
       minlength: [6, 'Password must be at least 6 characters'],
     },
-    avatar: {
-      type: String,
-      default: 'https://res.cloudinary.com/demo/image/upload/avatar-placeholder.png',
-    },
-    role: {
-      type: String,
-      enum: ['student', 'admin'],
-      default: 'student',
-    },
+
     rewards: {
       type: Number,
       default: 0,

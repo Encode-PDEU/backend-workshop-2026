@@ -1,5 +1,6 @@
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 
 // Generate JWT Token
 const generateToken = (username) => {
@@ -13,32 +14,26 @@ const generateToken = (username) => {
 // @access  Public
 export const register = async (req, res, next) => {
   try {
-    const { username, email, password } = req.body;
+    const { email, password } = req.body;
 
     // Check if user already exists
-    const existingUser = await User.findOne({
-      $or: [{ username }, { email }],
-    });
+    const existingUser = await User.findOne({ email });
 
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message:
-          existingUser.username === username
-            ? 'Username already taken'
-            : 'Email already registered',
+        message: 'Email already registered',
       });
     }
 
-    // Get avatar URL from Cloudinary if uploaded
-    const avatar = req.file ? req.file.path : undefined;
+    // Generate random anonymous username
+    const username = 'Anon_' + crypto.randomBytes(4).toString('hex');
 
     // Create user
     const user = await User.create({
       username,
       email,
       password,
-      avatar,
     });
 
     // Generate token
@@ -62,19 +57,18 @@ export const register = async (req, res, next) => {
 // @access  Public
 export const login = async (req, res, next) => {
   try {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
     // Validation
-    if (!username || !password) {
+    if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide username and password',
+        message: 'Please provide email and password',
       });
     }
 
     // Find user and explicitly select password
-    const user = await User.findOne({ username }).select('+password');
-
+    const user = await User.findOne({ email }).select('+password');
     if (!user) {
       return res.status(401).json({
         success: false,

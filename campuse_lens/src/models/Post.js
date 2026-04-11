@@ -16,10 +16,7 @@ const postSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
-    isAnonymous: {
-      type: Boolean,
-      default: false,
-    },
+
     likes: {
       type: [String], // Array of usernames
       default: [],

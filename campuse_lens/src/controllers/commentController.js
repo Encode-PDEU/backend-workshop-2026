@@ -6,7 +6,7 @@ import Post from '../models/Post.js';
 // @access  Private
 export const createComment = async (req, res, next) => {
   try {
-    const { postId, content, isAnonymous } = req.body;
+    const { postId, content } = req.body;
 
     // Check if post exists
     const post = await Post.findById(postId);
@@ -21,7 +21,6 @@ export const createComment = async (req, res, next) => {
       post: postId,
       author: req.user.username,
       content,
-      isAnonymous: isAnonymous === 'true' || isAnonymous === true,
     });
 
     res.status(201).json({
@@ -46,9 +45,7 @@ export const getCommentsByPost = async (req, res, next) => {
     // Apply privacy masking
     const maskedComments = comments.map(comment => {
       const commentObj = comment.toObject();
-      if (commentObj.isAnonymous) {
-        commentObj.author = 'anonymous';
-      }
+      commentObj.author = 'Anonymous';
       return commentObj;
     });
 

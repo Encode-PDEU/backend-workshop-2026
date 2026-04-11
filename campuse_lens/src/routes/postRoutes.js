@@ -8,6 +8,7 @@ import {
   likePost,
   dislikePost,
   getTopPosts,
+  getMyPosts,
 } from '../controllers/postController.js';
 import authenticate from '../middlewares/authenticate.js';
 import upload from '../config/cloudinary.js';
@@ -20,6 +21,7 @@ router.get('/top', getTopPosts);
 router.get('/:id', getPostById);
 
 // Protected routes
+router.get('/me', authenticate, getMyPosts);
 router.post('/', authenticate, upload.single('image'), createPost);
 router.patch('/:id', authenticate, updatePost);
 router.delete('/:id', authenticate, deletePost);
